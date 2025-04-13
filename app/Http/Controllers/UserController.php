@@ -22,6 +22,8 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Tymon\JWTAuth\Exceptions\TokenExpiredException;
+use Tymon\JWTAuth\Exceptions\TokenInvalidException;
 
 class UserController extends Controller
 {
@@ -518,6 +520,49 @@ class UserController extends Controller
 
 
 
+    public function refresh(Request $request)
+{
+    try {
+        $refreshToken = $request->input('refresh');
 
+        if (!$refreshToken) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No refresh token provided'
+            ], 400);
+        }
+
+        // Simuler la génération d'un nouveau access token à partir d'un refresh token
+        // (Normalement, un vrai système de refresh utiliserait une autre logique plus sécurisée)
+
+        // On peut juste générer un nouveau access JWT en reprenant l'utilisateur courant
+        $user = auth()->user(); 
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated',
+            ], 401);
+        }
+
+        $newAccessToken = JWTAuth::fromUser($user);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Token refreshed successfully',
+            'data' => [
+                'access' => $newAccessToken,
+                'refresh' => $refreshToken // tu peux régénérer un nouveau refresh aussi
+            ]
+        ], 200);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Token refresh failed',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
 
 }
